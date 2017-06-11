@@ -10,7 +10,11 @@ cfg_block!(cfg(quartz) {
     pub mod quartz;
 });
 
+cfg_block!(cfg(x11) {
+    #[macro_use]
+    extern crate ioctl_gen;
+});
+
 //TODO: Windows (DXGI)
 //TODO: Linux (X11)
-//TODO: Linux (Wayland)
 //TODO: Android (NO IDEA)
