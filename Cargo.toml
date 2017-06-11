@@ -8,5 +8,4 @@ authors = ["Ram <quadrupleslap@gmail.com>"]
 
 [dependencies]
 block = "0.1"
-ioctl-gen = "0.1"
 libc = "0.2"

@@ -11,8 +11,7 @@ cfg_block!(cfg(quartz) {
 });
 
 cfg_block!(cfg(x11) {
-    #[macro_use]
-    extern crate ioctl_gen;
+    pub mod x11;
 });
 
 //TODO: Windows (DXGI)
