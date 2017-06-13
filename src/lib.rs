@@ -1,3 +1,5 @@
+extern crate libc;
+
 macro_rules! cfg_block {
     ($x:meta { $($y:item)* }) => {
         $( #[$x] $y )*
@@ -5,7 +7,6 @@ macro_rules! cfg_block {
 }
 
 cfg_block!(cfg(quartz) {
-    extern crate libc;
     extern crate block;
     pub mod quartz;
 });

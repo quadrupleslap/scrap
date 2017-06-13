@@ -48,5 +48,5 @@ fn main() {
 
 #[cfg(not(quartz))]
 fn main() {
-    println!("This example requires Quartz, which you don't have. (.︿.)");
+    println!("This example requires Quartz, which you don't have.");
 }
