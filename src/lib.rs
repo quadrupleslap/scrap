@@ -15,6 +15,9 @@ cfg_block!(cfg(x11) {
     pub mod x11;
 });
 
-//TODO: Windows (DXGI)
-//TODO: Linux (X11)
-//TODO: Android (NO IDEA)
+cfg_block!(cfg(dxgi) {
+    extern crate winapi;
+    pub mod dxgi;
+});
+
+//TODO: Common

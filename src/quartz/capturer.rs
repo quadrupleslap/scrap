@@ -64,6 +64,7 @@ impl Capturer {
     }
 }
 
+//TODO: Merge impl blocks.
 impl Capturer {
     pub fn width(&self) -> usize { self.width }
     pub fn height(&self) -> usize { self.height }
@@ -74,7 +75,7 @@ impl Capturer {
 impl Drop for Capturer {
     fn drop(&mut self) {
         unsafe {
-            //TODO:LATER Possibly incorrect behavior - may have to wait until `Stopped` before releasing.
+            //TODO: Possibly incorrect behavior - may have to wait until `Stopped` before releasing.
             let _ = CGDisplayStreamStop(self.stream);
             CFRelease(self.stream);
             dispatch_release(self.queue);
