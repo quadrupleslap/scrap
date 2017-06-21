@@ -12,7 +12,7 @@ impl Capturer {
     pub fn new(display: Display) -> io::Result<Capturer> {
         let width = display.width();
         let height = display.height();
-        let inner = dxgi::Capturer::new(&display.inner)?;
+        let inner = dxgi::Capturer::new(&display.0)?;
         Ok(Capturer { inner, width, height })
     }
 
@@ -30,7 +30,7 @@ impl Capturer {
 
     pub fn frame<'a>(&'a mut self) -> io::Result<Frame<'a>> {
         const MILLISECONDS_PER_FRAME: u32 = 16;
-        Frame(self.inner.frame(MILLISECONDS_PER_FRAME))
+        Ok(Frame(self.inner.frame(MILLISECONDS_PER_FRAME)?))
     }
 }
 
