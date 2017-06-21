@@ -54,7 +54,9 @@ pub enum CGDisplayStreamFrameStatus {
     /// A new frame was not generated because the display has gone blank.
     FrameBlank = 2,
     /// The display stream was stopped.
-    Stopped = 3
+    Stopped = 3,
+    #[doc(hidden)]
+    __Nonexhaustive
 }
 
 #[repr(i32)]
@@ -95,7 +97,9 @@ pub enum CGError {
     RangeCheck = 1007,
     TypeCheck = 1008,
     InvalidOperation = 1010,
-    NoneAvailable = 1011
+    NoneAvailable = 1011,
+    #[doc(hidden)]
+    __Nonexhaustive
 }
 
 #[repr(i32)]
@@ -108,7 +112,9 @@ pub enum PixelFormat {
     /// 2-plane "video" range YCbCr 4:2:0
     YCbCr420Video = pixel_format!('4','2','0','v'),
     /// 2-plane "full" range YCbCr 4:2:0
-    YCbCr420Full = pixel_format!('4','2','0','f')
+    YCbCr420Full = pixel_format!('4','2','0','f'),
+    #[doc(hidden)]
+    __Nonexhaustive
 }
 
 pub type CGDisplayStreamFrameAvailableHandler = *const c_void;

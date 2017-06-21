@@ -21,5 +21,7 @@ pub enum PixelFormat {
     /// 2-plane "video" range YCbCr 4:2:0
     YCbCr420Video,
     /// 2-plane "full" range YCbCr 4:2:0
-    YCbCr420Full
+    YCbCr420Full,
+    /// Other formats.
+    Other
 }

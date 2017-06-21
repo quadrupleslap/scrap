@@ -62,10 +62,7 @@ impl Capturer {
             x => Err(x)
         }
     }
-}
-
-//TODO: Merge impl blocks.
-impl Capturer {
+    
     pub fn width(&self) -> usize { self.width }
     pub fn height(&self) -> usize { self.height }
     pub fn format(&self) -> PixelFormat { self.format }

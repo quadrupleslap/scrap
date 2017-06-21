@@ -1,5 +1,5 @@
 use dxgi;
-use std::io;
+use std::{io, ops};
 use PixelFormat;
 
 pub struct Capturer {
@@ -28,35 +28,42 @@ impl Capturer {
         PixelFormat::Argb8888
     }
 
-    pub fn frame<'a>(&'a mut self) -> io::Result<&'a [u8]> {
+    pub fn frame<'a>(&'a mut self) -> io::Result<Frame<'a>> {
         const MILLISECONDS_PER_FRAME: u32 = 16;
-        self.inner.frame(MILLISECONDS_PER_FRAME)
+        Frame(self.inner.frame(MILLISECONDS_PER_FRAME))
     }
 }
 
-pub struct Display {
-    inner: dxgi::Display
+pub struct Frame<'a>(&'a [u8]);
+
+impl<'a> ops::Deref for Frame<'a> {
+    type Target = [u8];
+    fn deref(&self) -> &[u8] {
+        self.0
+    }
 }
+
+pub struct Display(dxgi::Display);
 
 impl Display {
     pub fn main() -> io::Result<Display> {
         match dxgi::Displays::new()?.next() {
-            Some(inner) => Ok(Display { inner }),
+            Some(inner) => Ok(Display(inner)),
             None => Err(io::ErrorKind::NotFound.into())
         }
     }
 
     pub fn all() -> io::Result<Vec<Display>> {
         Ok(dxgi::Displays::new()?
-            .map(|inner| Display { inner })
+            .map(Display)
             .collect::<Vec<_>>())
     }
 
     pub fn width(&self) -> usize {
-        self.inner.width() as usize
+        self.0.width() as usize
     }
 
     pub fn height(&self) -> usize {
-        self.inner.height() as usize
+        self.0.height() as usize
     }
 }
