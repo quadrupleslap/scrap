@@ -1,27 +1,28 @@
+use std::rc::Rc;
 use super::{Display, Server};
 use super::ffi::*;
 
-pub struct DisplayIter<'a> {
+pub struct DisplayIter {
     raw: xcb_screen_iterator_t,
     index: i32,
     default_index: i32,
-    server: &'a Server
+    server: Rc<Server>
 }
 
-impl<'a> DisplayIter<'a> {
+impl DisplayIter {
     pub unsafe fn new(
         raw: xcb_screen_iterator_t,
         default_index: i32,
-        server: &'a Server
-    ) -> DisplayIter<'a> {
+        server: Rc<Server>
+    ) -> DisplayIter {
         DisplayIter { raw, index: 0, default_index, server }
     }
 }
 
-impl<'a> Iterator for DisplayIter<'a> {
-    type Item = Display<'a>;
+impl Iterator for DisplayIter {
+    type Item = Display;
 
-    fn next(&mut self) -> Option<Display<'a>> {
+    fn next(&mut self) -> Option<Display> {
         if self.raw.rem == 0 {
             return None;
         }
@@ -30,7 +31,7 @@ impl<'a> Iterator for DisplayIter<'a> {
             let data = &*self.raw.data;
 
             let display = Display::new(
-                self.server,
+                self.server.clone(),
                 self.index == self.default_index,
                 data.width_in_pixels,
                 data.height_in_pixels,

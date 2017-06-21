@@ -3,8 +3,8 @@ use std::{io, ptr, slice};
 use super::Display;
 use super::ffi::*;
 
-pub struct Capturer<'a> {
-    display: Display<'a>,
+pub struct Capturer {
+    display: Display,
     shmid: i32,
     xcbid: u32,
     buffer: *const u8,
@@ -14,10 +14,10 @@ pub struct Capturer<'a> {
     size: usize
 }
 
-impl<'a> Capturer<'a> {
+impl Capturer {
     pub fn new(
-        display: Display<'a>
-    ) -> io::Result<Capturer<'a>> {
+        display: Display
+    ) -> io::Result<Capturer> {
         // Calculate dimensions.
 
         let pixel_width = 4;
@@ -90,6 +90,10 @@ impl<'a> Capturer<'a> {
         })
     }
 
+    pub fn display(&self) -> &Display {
+        &self.display
+    }
+
     pub fn frame<'b>(&'b mut self) -> &'b [u8] {
         // Get the return value.
         
@@ -140,7 +144,7 @@ impl<'a> Capturer<'a> {
     }
 }
 
-impl<'a> Drop for Capturer<'a> {
+impl Drop for Capturer {
     fn drop(&mut self) {
         unsafe {
             // Process pending request.

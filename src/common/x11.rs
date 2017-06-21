@@ -1,64 +1,76 @@
-//TODO: X11.
-
-use dxgi;
-use std::io;
+use x11;
+use std::{io, ops};
+use std::rc::Rc;
 use PixelFormat;
 
-pub struct Capturer {
-    inner: dxgi::Capturer,
-    width: usize,
-    height: usize
-}
+pub struct Capturer(x11::Capturer);
 
 impl Capturer {
     pub fn new(display: Display) -> io::Result<Capturer> {
-        let width = display.width();
-        let height = display.height();
-        let inner = dxgi::Capturer::new(&display.inner)?;
-        Ok(Capturer { inner, width, height })
+        x11::Capturer::new(display.0).map(Capturer)
     }
 
     pub fn width(&self) -> usize {
-        self.width
+        self.0.display().width() as usize
     }
 
     pub fn height(&self) -> usize {
-        self.height
+        self.0.display().height() as usize
     }
 
     pub fn format(&self) -> PixelFormat {
         PixelFormat::Argb8888
     }
 
-    pub fn frame<'a>(&'a mut self) -> io::Result<&'a [u8]> {
-        const MILLISECONDS_PER_FRAME: u32 = 16;
-        self.inner.frame(MILLISECONDS_PER_FRAME)
+    pub fn frame<'a>(&'a mut self) -> io::Result<Frame<'a>> {
+        Ok(Frame(self.0.frame()))
     }
 }
 
-pub struct Display {
-    inner: dxgi::Display
+pub struct Frame<'a>(&'a [u8]);
+
+impl<'a> ops::Deref for Frame<'a> {
+    type Target = [u8];
+    fn deref(&self) -> &[u8] {
+        self.0
+    }
 }
+
+pub struct Display(x11::Display);
 
 impl Display {
     pub fn main() -> io::Result<Display> {
-        match dxgi::Displays::new()?.next() {
-            Some(inner) => Ok(Display { inner }),
+        let server = Rc::new(match x11::Server::default() {
+            Ok(server) => server,
+            Err(_) => return Err(io::ErrorKind::ConnectionRefused.into())
+        });
+
+        let mut displays = x11::Server::displays(server);
+        let mut best = displays.next();
+        if best.as_ref().map(|x| x.is_default()) == Some(false) {
+            best = displays.find(|x| x.is_default()).or(best);
+        }
+
+        match best {
+            Some(best) => Ok(Display(best)),
             None => Err(io::ErrorKind::NotFound.into())
         }
     }
 
     pub fn all() -> io::Result<Vec<Display>> {
-        Ok(dxgi::Displays::new()?
-            .map(|inner| Display { inner })
-            .collect::<Vec<_>>())
+        let server = Rc::new(match x11::Server::default() {
+            Ok(server) => server,
+            Err(_) => return Err(io::ErrorKind::ConnectionRefused.into())
+        });
+
+        Ok(x11::Server::displays(server).map(Display).collect())
     }
 
     pub fn width(&self) -> usize {
-        self.inner.width() as usize
+        self.0.width() as usize
     }
 
     pub fn height(&self) -> usize {
-        self.inner.height() as usize
+        self.0.height() as usize
     }
 }

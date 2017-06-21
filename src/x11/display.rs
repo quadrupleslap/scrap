@@ -1,27 +1,28 @@
+use std::rc::Rc;
 use super::Server;
 use super::ffi::*;
 
 #[derive(Debug)]
-pub struct Display<'a> {
-    server: &'a Server,
+pub struct Display {
+    server: Rc<Server>,
     default: bool,
     width: u16,
     height: u16,
     root: xcb_window_t
 }
 
-impl<'a> Display<'a> {
+impl Display {
     pub unsafe fn new(
-        server: &'a Server,
+        server: Rc<Server>,
         default: bool,
         width: u16,
         height: u16,
         root: xcb_window_t
-    ) -> Display<'a> {
+    ) -> Display {
         Display { server, default, width, height, root }
     }
 
-    pub fn server(&self) -> &'a Server { self.server }
+    pub fn server(&self) -> &Rc<Server> { &self.server }
     pub fn is_default(&self) -> bool { self.default }
     pub fn width(&self) -> u16 { self.width }
     pub fn height(&self) -> u16 { self.height }

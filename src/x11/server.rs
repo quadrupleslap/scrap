@@ -1,4 +1,5 @@
 use std::ptr;
+use std::rc::Rc;
 use super::DisplayIter;
 use super::ffi::*;
 
@@ -10,12 +11,12 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn displays<'a>(&'a self) -> DisplayIter<'a> {
+    pub fn displays(slf: Rc<Server>) -> DisplayIter {
         unsafe {
             DisplayIter::new(
-                xcb_setup_roots_iterator(self.setup),
-                self.screenp,
-                self
+                xcb_setup_roots_iterator(slf.setup),
+                slf.screenp,
+                slf
             )
         }
     }
