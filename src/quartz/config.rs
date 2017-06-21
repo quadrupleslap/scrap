@@ -2,7 +2,7 @@ use super::ffi::*;
 use libc::c_void;
 use std::ptr;
 
-//TODO:LATER Color space, YCbCr matrix.
+//TODO: Color space, YCbCr matrix.
 pub struct Config {
     /// Whether the cursor is visible.
     pub cursor: bool,

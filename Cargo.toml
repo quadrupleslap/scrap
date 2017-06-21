@@ -1,8 +1,10 @@
 [package]
 name = "scrap"
 description = "Screen capture made easy."
-version = "0.0.1"
+version = "0.0.2"
 repository = "https://github.com/quadrupleslap/scrap"
+documentation = "https://docs.rs/scrap"
+keywords = ["screen", "capture", "record"]
 license = "MIT"
 authors = ["Ram <quadrupleslap@gmail.com>"]
 
