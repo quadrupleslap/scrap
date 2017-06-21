@@ -1,5 +1,7 @@
 extern crate libc;
 
+//TODO: Documentation.
+
 macro_rules! cfg_block {
     ($x:meta { $($y:item)* }) => {
         $( #[$x] $y )*
@@ -20,4 +22,9 @@ cfg_block!(cfg(dxgi) {
     pub mod dxgi;
 });
 
-//TODO: Common
+mod common;
+pub use common::{
+    Capturer,
+    Display,
+    PixelFormat
+};
