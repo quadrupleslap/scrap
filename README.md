@@ -1,6 +1,13 @@
-# `scrap = 0.0.2`
+# `scrap`
 
 Scrap records your screen! At least it does if you're on Windows, macOS, or Linux.
+
+## Usage
+
+```toml
+[dependencies]
+scrap = "0.0.2"
+```
 
 Its API is as simple as it gets!
 
