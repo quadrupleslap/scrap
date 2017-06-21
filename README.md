@@ -1,4 +1,4 @@
-# scrap
+# `scrap = 0.0.2`
 
 Scrap records your screen! At least it does if you're on Windows, macOS, or Linux.
 
