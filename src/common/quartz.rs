@@ -1,11 +1,11 @@
 use quartz;
-use std::{io, ops};
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::{io, ops, mem};
+use std::marker::PhantomData;
+use std::sync::{Arc, Mutex, TryLockError};
 use PixelFormat;
 
 pub struct Capturer {
     inner: quartz::Capturer,
-    //TODO: This is horrifying and hopefully unnecessary.
     frame: Arc<Mutex<Option<quartz::Frame>>>
 }
 
@@ -21,8 +21,9 @@ impl Capturer {
             quartz::PixelFormat::Argb8888,
             Default::default(),
             move |inner| {
-                //TODO: Unwinds into C code.
-                *f.lock().unwrap() = Some(inner);
+                if let Ok(mut f) = f.lock() {
+                    *f = Some(inner);
+                }
             }
         ).map_err(|_| io::Error::from(io::ErrorKind::Other))?;
 
@@ -49,22 +50,38 @@ impl Capturer {
     }
 
     pub fn frame<'a>(&'a mut self) -> io::Result<Frame<'a>> {
-        if let Ok(frame) = self.frame.lock() {
-            if frame.is_some() {
-                return Ok(Frame(frame));
+        match self.frame.try_lock() {
+            Ok(mut handle) => {
+                let mut frame = None;
+                mem::swap(&mut frame, &mut handle);
+
+                match frame {
+                    Some(frame) =>
+                        Ok(Frame(frame, PhantomData)),
+
+                    None =>
+                        Err(io::ErrorKind::WouldBlock.into())
+                }
             }
+
+            Err(TryLockError::WouldBlock) =>
+                Err(io::ErrorKind::WouldBlock.into()),
+
+            Err(TryLockError::Poisoned(..)) =>
+                Err(io::ErrorKind::Other.into())
         }
-        Err(io::ErrorKind::Other.into())
     }
 }
 
-pub struct Frame<'a>(MutexGuard<'a, Option<quartz::Frame>>);
+pub struct Frame<'a>(
+    quartz::Frame,
+    PhantomData<&'a [u8]>
+);
 
 impl<'a> ops::Deref for Frame<'a> {
     type Target = [u8];
     fn deref(&self) -> &[u8] {
-        // Verified to be Some during construction.
-        &*(&*self.0).as_ref().unwrap()
+        &*self.0
     }
 }
 

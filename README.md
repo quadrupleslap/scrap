@@ -6,7 +6,7 @@ Scrap records your screen! At least it does if you're on Windows, macOS, or Linu
 
 ```toml
 [dependencies]
-scrap = "0.1"
+scrap = "0.1.1"
 ```
 
 Its API is as simple as it gets!
@@ -19,7 +19,8 @@ struct Capturer; /// A recording instance.
 impl Capturer {
     /// Begin recording.
     pub fn new(display: Display) -> io::Result<Capturer>;
-    /// Get a frame!
+    /// Try to get a frame!
+    /// Returns WouldBlock if it would block.
     pub fn frame<'a>(&'a mut self) -> io::Result<Frame<'a>>;
 
     pub fn width(&self) -> usize;
@@ -44,7 +45,6 @@ Please contribute! Here's some stuff that needs doing:
 
 - Supporting non-mappable Windows devices.
 - Examples, and lots of them!
-- Avoiding an `Arc<Mutex<Option<T>>>` in the macOS implementation.
 - Android support (a stretch.)
 
 For minor things that need doing, `rg` or `grep` for `TODO` in the source directory.
