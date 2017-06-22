@@ -3,6 +3,7 @@ extern crate scrap;
 fn main() {
     use scrap::{Capturer, Display};
     use std::io::Write;
+    use std::io::ErrorKind::WouldBlock;
     use std::process::{Command, Stdio};
     use std::thread;
     use std::time::Duration;
@@ -25,11 +26,22 @@ fn main() {
     let mut out = child.stdin.unwrap();
 
     loop {
-        if let Ok(frame) = capturer.frame() {
-            if out.write_all(&*frame).is_err() {
+        match capturer.frame() {
+            Ok(frame) => {
+                // Write the frame.
+                if out.write_all(&*frame).is_err() {
+                    break;
+                }
+            }
+            Err(ref e) if e.kind() == WouldBlock => {
+                // We wait.
+            }
+            Err(_) => {
+                // We're done here.
                 break;
             }
         }
+
         thread::sleep(Duration::from_millis(1000 / 60));
     }
 }
