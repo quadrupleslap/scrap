@@ -1,7 +1,5 @@
 extern crate libc;
 
-//TODO: Documentation.
-
 macro_rules! cfg_block {
     ($x:meta { $($y:item)* }) => {
         $( #[$x] $y )*

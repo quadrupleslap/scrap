@@ -4,6 +4,8 @@ fn main() {
     use scrap::{Capturer, Display};
     use std::io::Write;
     use std::process::{Command, Stdio};
+    use std::thread;
+    use std::time::Duration;
 
     let d = Display::main().unwrap();
     let (w, h) = (d.width(), d.height());
@@ -28,5 +30,6 @@ fn main() {
                 break;
             }
         }
+        thread::sleep(Duration::from_millis(1000 / 60));
     }
 }
