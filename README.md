@@ -41,10 +41,4 @@ impl Display {
 
 ## Contributing
 
-Please contribute! Here's some stuff that needs doing:
-
-- Supporting non-mappable Windows devices.
-- Examples, and lots of them!
-- Android support (a stretch.)
-
-For minor things that need doing, `rg` or `grep` for `TODO` in the source directory.
+Please contribute! See the [issue tracker](https://github.com/quadrupleslap/scrap/issues) for stuff that needs doing.
