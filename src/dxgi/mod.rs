@@ -29,7 +29,6 @@ mod ffi;
 
 //TODO: Split up into files.
 //TODO: Support non-mappable outputs, too.
-//TODO: Apply rotations.
 
 pub struct Capturer {
     device: *mut ID3D11Device,
