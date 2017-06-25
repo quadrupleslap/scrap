@@ -6,7 +6,7 @@ Scrap records your screen! At least it does if you're on Windows, macOS, or Linu
 
 ```toml
 [dependencies]
-scrap = "0.2.1"
+scrap = "0.3.0"
 ```
 
 Its API is as simple as it gets!
@@ -31,7 +31,7 @@ impl Capturer {
 impl Display {
     /// The primary screen.
     pub fn primary() -> io::Result<Display>;
-    
+
     /// All the screens.
     pub fn all() -> io::Result<Vec<Display>>;
 
