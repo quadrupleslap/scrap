@@ -172,6 +172,7 @@ impl Capturer {
 
         if let Err(err) = res {
             (*frame).Release();
+            (*texture).Release();
             (*readable).Release();
             Err(err)
         } else {
@@ -189,6 +190,8 @@ impl Capturer {
             );
 
             (*frame).Release();
+            (*texture).Release();
+            (*readable).Release();
             Ok(surface)
         }
     }
@@ -308,6 +311,7 @@ impl Displays {
                 &IID_IDXGIOUTPUT1,
                 &mut inner as *mut *mut _ as *mut *mut _
             );
+            (*output).Release();
         }
 
         // If it's null, we have an error.
@@ -315,11 +319,14 @@ impl Displays {
 
         if inner.is_null() {
             unsafe {
-                (*output).Release();
                 (*self.adapter).Release();
                 self.adapter = ptr::null_mut();
             }
             return None;
+        }
+
+        unsafe {
+            (*self.adapter).AddRef();
         }
 
         Some(Some(Display { inner, adapter: self.adapter, desc }))
