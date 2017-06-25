@@ -1,7 +1,6 @@
 use x11;
 use std::{io, ops};
 use std::rc::Rc;
-use PixelFormat;
 
 pub struct Capturer(x11::Capturer);
 
@@ -16,10 +15,6 @@ impl Capturer {
 
     pub fn height(&self) -> usize {
         self.0.display().height() as usize
-    }
-
-    pub fn format(&self) -> PixelFormat {
-        PixelFormat::Argb8888
     }
 
     pub fn frame<'a>(&'a mut self) -> io::Result<Frame<'a>> {
@@ -39,11 +34,6 @@ impl<'a> ops::Deref for Frame<'a> {
 pub struct Display(x11::Display);
 
 impl Display {
-    #[deprecated(note="renamed to `Display::primary`")]
-    pub fn main() -> io::Result<Display> {
-        Display::primary()
-    }
-
     pub fn primary() -> io::Result<Display> {
         let server = Rc::new(match x11::Server::default() {
             Ok(server) => server,

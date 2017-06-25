@@ -21,8 +21,4 @@ cfg_block!(cfg(dxgi) {
 });
 
 mod common;
-pub use common::{
-    Capturer,
-    Display,
-    PixelFormat
-};
+pub use common::{Capturer, Display};

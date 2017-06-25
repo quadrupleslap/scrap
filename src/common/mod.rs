@@ -13,15 +13,3 @@ cfg_block!(cfg(dxgi) {
     pub use self::dxgi::*;
 });
 
-pub enum PixelFormat {
-    /// Packed Little Endian ARGB8888
-    Argb8888,
-    /// Packed Little Endian ARGB2101010
-    Argb2101010,
-    /// 2-plane "video" range YCbCr 4:2:0
-    YCbCr420Video,
-    /// 2-plane "full" range YCbCr 4:2:0
-    YCbCr420Full,
-    /// Other formats.
-    Other
-}

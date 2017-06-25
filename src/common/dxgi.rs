@@ -1,7 +1,6 @@
 use dxgi;
 use std::{io, ops};
 use std::io::ErrorKind::{WouldBlock, TimedOut, NotFound};
-use PixelFormat;
 
 pub struct Capturer {
     inner: dxgi::Capturer,
@@ -23,10 +22,6 @@ impl Capturer {
 
     pub fn height(&self) -> usize {
         self.height
-    }
-
-    pub fn format(&self) -> PixelFormat {
-        PixelFormat::Argb8888
     }
 
     pub fn frame<'a>(&'a mut self) -> io::Result<Frame<'a>> {
@@ -53,11 +48,6 @@ impl<'a> ops::Deref for Frame<'a> {
 pub struct Display(dxgi::Display);
 
 impl Display {
-    #[deprecated(note="renamed to `Display::primary`")]
-    pub fn main() -> io::Result<Display> {
-        Display::primary()
-    }
-
     pub fn primary() -> io::Result<Display> {
         match dxgi::Displays::new()?.next() {
             Some(inner) => Ok(Display(inner)),

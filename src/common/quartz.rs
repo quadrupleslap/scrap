@@ -2,7 +2,6 @@ use quartz;
 use std::{io, ops, mem};
 use std::marker::PhantomData;
 use std::sync::{Arc, Mutex, TryLockError};
-use PixelFormat;
 
 pub struct Capturer {
     inner: quartz::Capturer,
@@ -36,17 +35,6 @@ impl Capturer {
 
     pub fn height(&self) -> usize {
         self.inner.height()
-    }
-
-    pub fn format(&self) -> PixelFormat {
-        use quartz::PixelFormat::*;
-        match self.inner.format() {
-            Argb8888 => PixelFormat::Argb8888,
-            Argb2101010 => PixelFormat::Argb2101010,
-            YCbCr420Video => PixelFormat::YCbCr420Video,
-            YCbCr420Full => PixelFormat::YCbCr420Full,
-            _ => PixelFormat::Other
-        }
     }
 
     pub fn frame<'a>(&'a mut self) -> io::Result<Frame<'a>> {
@@ -88,11 +76,6 @@ impl<'a> ops::Deref for Frame<'a> {
 pub struct Display(quartz::Display);
 
 impl Display {
-    #[deprecated(note="renamed to `Display::primary`")]
-    pub fn main() -> io::Result<Display> {
-        Display::primary()
-    }
-
     pub fn primary() -> io::Result<Display> {
         Ok(Display(quartz::Display::primary()))
     }
