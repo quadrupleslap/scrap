@@ -39,7 +39,12 @@ impl<'a> ops::Deref for Frame<'a> {
 pub struct Display(x11::Display);
 
 impl Display {
+    #[deprecated(note="renamed to `Display::primary`")]
     pub fn main() -> io::Result<Display> {
+        Display::primary()
+    }
+
+    pub fn primary() -> io::Result<Display> {
         let server = Rc::new(match x11::Server::default() {
             Ok(server) => server,
             Err(_) => return Err(io::ErrorKind::ConnectionRefused.into())

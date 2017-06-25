@@ -11,7 +11,7 @@ fn main() {
     let one_second = Duration::from_millis(1000);
     let path = Path::new("screenshot.png");
 
-    let display = Display::main().expect("Couldn't find main display.");
+    let display = Display::primary().expect("Couldn't find primary display.");
     let mut capturer = Capturer::new(display).expect("Couldn't begin capture.");
     let (w, h) = (capturer.width(), capturer.height());
 

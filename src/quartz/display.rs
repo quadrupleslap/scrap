@@ -6,7 +6,17 @@ use std::mem;
 pub struct Display(u32);
 
 impl Display {
+    #[deprecated(note="renamed to `Display::primary`")]
     pub fn main() -> Display {
+        Display::primary()
+    }
+
+    #[deprecated(note="renamed to `Display::is_primary`")]
+    pub fn is_main(self) -> bool {
+        self.is_primary()
+    }
+
+    pub fn primary() -> Display {
         Display(unsafe { CGMainDisplayID() })
     }
 
@@ -44,7 +54,7 @@ impl Display {
         unsafe { CGDisplayIsBuiltin(self.0) != 0 }
     }
 
-    pub fn is_main(self) -> bool {
+    pub fn is_primary(self) -> bool {
         unsafe { CGDisplayIsMain(self.0) != 0 }
     }
 

@@ -8,7 +8,7 @@ fn main() {
     use std::thread;
     use std::time::Duration;
 
-    let d = Display::main().unwrap();
+    let d = Display::primary().unwrap();
     let (w, h) = (d.width(), d.height());
 
     let child =

@@ -46,7 +46,12 @@ impl<'a> ops::Deref for Frame<'a> {
 pub struct Display(dxgi::Display);
 
 impl Display {
+    #[deprecated(note="renamed to `Display::primary`")]
     pub fn main() -> io::Result<Display> {
+        Display::primary()
+    }
+
+    pub fn primary() -> io::Result<Display> {
         match dxgi::Displays::new()?.next() {
             Some(inner) => Ok(Display(inner)),
             None => Err(io::ErrorKind::NotFound.into())

@@ -29,8 +29,8 @@ impl Capturer {
 }
 
 impl Display {
-    /// The main screen.
-    pub fn main() -> io::Result<Display>;
+    /// The primary screen.
+    pub fn primary() -> io::Result<Display>;
     /// All the screens.
     pub fn all() -> io::Result<Vec<Display>>;
 

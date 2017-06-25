@@ -88,8 +88,13 @@ impl<'a> ops::Deref for Frame<'a> {
 pub struct Display(quartz::Display);
 
 impl Display {
+    #[deprecated(note="renamed to `Display::primary`")]
     pub fn main() -> io::Result<Display> {
-        Ok(Display(quartz::Display::main()))
+        Display::primary()
+    }
+
+    pub fn primary() -> io::Result<Display> {
+        Ok(Display(quartz::Display::primary()))
     }
 
     pub fn all() -> io::Result<Vec<Display>> {
