@@ -1,5 +1,6 @@
 use dxgi;
 use std::{io, ops};
+use std::io::ErrorKind::{WouldBlock, TimedOut, NotFound};
 use PixelFormat;
 
 pub struct Capturer {
@@ -29,8 +30,14 @@ impl Capturer {
     }
 
     pub fn frame<'a>(&'a mut self) -> io::Result<Frame<'a>> {
-        const MILLISECONDS_PER_FRAME: u32 = 16;
-        Ok(Frame(self.inner.frame(MILLISECONDS_PER_FRAME)?))
+        const MILLISECONDS_PER_FRAME: u32 = 0;
+        match self.inner.frame(MILLISECONDS_PER_FRAME) {
+            Ok(frame) => Ok(Frame(frame)),
+            Err(ref error) if error.kind() == TimedOut => {
+                Err(WouldBlock.into())
+            },
+            Err(error) => Err(error)
+        }
     }
 }
 
@@ -54,7 +61,7 @@ impl Display {
     pub fn primary() -> io::Result<Display> {
         match dxgi::Displays::new()?.next() {
             Some(inner) => Ok(Display(inner)),
-            None => Err(io::ErrorKind::NotFound.into())
+            None => Err(NotFound.into())
         }
     }
 

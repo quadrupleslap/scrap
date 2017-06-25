@@ -21,22 +21,28 @@ use winapi::{
     DXGI_ERROR_INVALID_CALL,
     E_ACCESSDENIED,
     DXGI_ERROR_UNSUPPORTED,
+    ID3D11Texture2D,
     DXGI_ERROR_NOT_CURRENTLY_AVAILABLE,
-    DXGI_ERROR_SESSION_DISCONNECTED
+    DXGI_ERROR_SESSION_DISCONNECTED,
+    TRUE,
+    IDXGISurface,
+    IDXGIResource,
+    DXGI_RESOURCE_PRIORITY_MAXIMUM,
+    D3D11_CPU_ACCESS_READ,
+    D3D11_USAGE_STAGING
 };
 
 mod ffi;
 
 //TODO: Split up into files.
-//TODO: Support non-mappable outputs, too.
 
 pub struct Capturer {
     device: *mut ID3D11Device,
     context: *mut ID3D11DeviceContext,
     duplication: *mut IDXGIOutputDuplication,
+    fastlane: bool, surface: *mut IDXGISurface,
+    data: *mut u8, len: usize,
     height: usize,
-    data: *mut u8,
-    len: usize
 }
 
 impl Capturer {
@@ -44,6 +50,7 @@ impl Capturer {
         let mut device = ptr::null_mut();
         let mut context = ptr::null_mut();
         let mut duplication = ptr::null_mut();
+        let mut desc = unsafe { mem::uninitialized() };
 
         if unsafe {
             D3D11CreateDevice(
@@ -63,16 +70,30 @@ impl Capturer {
             return Err(io::ErrorKind::Other.into());
         }
 
-        wrap_hresult(unsafe {
+        let res = wrap_hresult(unsafe {
             (*display.inner).DuplicateOutput(
                 &mut **device,
                 &mut duplication
             )
-        })?;
+        });
+
+        if let Err(err) = res {
+            unsafe {
+                (*device).Release();
+                (*context).Release();
+            }
+            return Err(err);
+        }
+
+        unsafe {
+            (*duplication).GetDesc(&mut desc);
+        }
 
         Ok(unsafe {
             let mut capturer = Capturer {
                 device, context, duplication,
+                fastlane: desc.DesktopImageInSystemMemory == TRUE,
+                surface: ptr::null_mut(),
                 height: display.height() as usize,
                 data: ptr::null_mut(),
                 len: 0
@@ -85,7 +106,6 @@ impl Capturer {
     unsafe fn load_frame(&mut self, timeout: UINT) -> io::Result<()> {
         let mut frame = ptr::null_mut();
         let mut info = mem::uninitialized();
-        let mut rect = mem::uninitialized();
         self.data = ptr::null_mut();
 
         wrap_hresult((*self.duplication).AcquireNextFrame(
@@ -94,26 +114,106 @@ impl Capturer {
             &mut frame
         ))?;
 
-        wrap_hresult((*self.duplication).MapDesktopSurface(&mut rect))?;
-        
-        (*frame).Release();
-        self.data = rect.pBits;
-        self.len = self.height * rect.Pitch as usize;
+        if self.fastlane {
+            let mut rect = mem::uninitialized();
+            let res = wrap_hresult(
+                (*self.duplication).MapDesktopSurface(&mut rect)
+            );
 
-        Ok(())
+            (*frame).Release();
+
+            if let Err(err) = res {
+                Err(err)
+            } else {
+                self.data = rect.pBits;
+                self.len = self.height * rect.Pitch as usize;
+                Ok(())
+            }
+        } else {
+            self.surface = ptr::null_mut();
+            self.surface = self.ohgodwhat(frame)?;
+            
+            let mut rect = mem::uninitialized();
+            wrap_hresult((*self.surface).Map(
+                &mut rect,
+                DXGI_MAP_READ
+            ))?;
+
+            self.data = rect.pBits;
+            self.len = self.height * rect.Pitch as usize;
+            Ok(())
+        }
+    }
+
+    unsafe fn ohgodwhat(
+        &mut self,
+        frame: *mut IDXGIResource
+    ) -> io::Result<*mut IDXGISurface> {
+        let mut texture: *mut ID3D11Texture2D = ptr::null_mut();
+        (*frame).QueryInterface(
+            &IID_ID3D11TEXTURE2D,
+            &mut texture as *mut *mut _ as *mut *mut _
+        );
+
+        let mut texture_desc = mem::uninitialized();
+        (*texture).GetDesc(&mut texture_desc);
+
+        texture_desc.Usage = D3D11_USAGE_STAGING;
+        texture_desc.BindFlags = 0;
+        texture_desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ.0;
+        texture_desc.MiscFlags = 0;
+
+        let mut readable = ptr::null_mut();
+        let res = wrap_hresult((*self.device).CreateTexture2D(
+            &mut texture_desc,
+            ptr::null(),
+            &mut readable
+        ));
+
+        if let Err(err) = res {
+            (*frame).Release();
+            (*readable).Release();
+            Err(err)
+        } else {
+            (*readable).SetEvictionPriority(DXGI_RESOURCE_PRIORITY_MAXIMUM);
+
+            let mut surface = ptr::null_mut();
+            (*readable).QueryInterface(
+                &IID_IDXGISURFACE,
+                &mut surface as *mut *mut _ as *mut *mut _
+            );
+
+            (*self.context).CopyResource(
+                &mut **readable,
+                &mut **texture
+            );
+
+            (*frame).Release();
+            Ok(surface)
+        }
     }
     
     pub fn frame<'a>(&'a mut self, timeout: UINT) -> io::Result<&'a [u8]> {
         unsafe {
             // Release last frame.
             // No error checking needed because we don't care.
-            // All the errors don't crash (I think.)
-            (*self.duplication).UnMapDesktopSurface();
+            // None of the errors crash anyway.
+
+            if self.fastlane {
+                (*self.duplication).UnMapDesktopSurface();
+            } else {
+                if !self.surface.is_null() {
+                    (*self.surface).Unmap();
+                    (*self.surface).Release();
+                    self.surface = ptr::null_mut();
+                }
+            }
+            
             (*self.duplication).ReleaseFrame();
 
             // Get next frame.
+
             self.load_frame(timeout)?;
-            // No error checking because all errors caught by `load_frame`.
             Ok(slice::from_raw_parts(self.data, self.len))
         }
     }
@@ -146,9 +246,10 @@ impl Displays {
         })?;
 
         let mut adapter = ptr::null_mut();
-        wrap_hresult(unsafe {
-            (*factory).EnumAdapters1(0, &mut adapter)
-        })?;
+        unsafe {
+            // On error, our adapter is null, so it's fine.
+            (*factory).EnumAdapters1(0, &mut adapter);
+        };
 
         Ok(Displays {
             factory,
@@ -162,24 +263,36 @@ impl Displays {
     // Non-Empty Adapter => Some(Some(OUTPUT))
     // End of Adapter => None
     fn read_and_invalidate(&mut self) -> Option<Option<Display>> {
+        // If there is no adapter, there is nothing left for us to do.
+
         if self.adapter.is_null() {
             return Some(None);
         }
 
-        let adapter = unsafe { &mut *self.adapter };
+        // Otherwise, we get the next output of the current adapter.
 
         let output = unsafe {
             let mut output = ptr::null_mut();
-            adapter.EnumOutputs(self.ndisplay, &mut output);
+            (*self.adapter).EnumOutputs(self.ndisplay, &mut output);
             output
         };
 
+        // If the current adapter is done, we free it.
+        // We then return None to signal the caller to get the next adapter and try again.
+
         if output.is_null() {
-            unsafe { adapter.Release(); }
+            unsafe {
+                (*self.adapter).Release();
+                self.adapter = ptr::null_mut();
+            }
             return None;
         }
 
+        // Advance to the next display.
+
         self.ndisplay += 1;
+
+        // We get the display's details.
 
         let desc = unsafe {
             let mut desc = mem::uninitialized();
@@ -187,28 +300,29 @@ impl Displays {
             desc
         };
 
+        // We cast it up to the version needed for desktop duplication.
+
         let mut inner = ptr::null_mut();
         unsafe {
-            // Errors guaranteed to result in null.
             (*output).QueryInterface(
                 &IID_IDXGIOUTPUT1,
                 &mut inner as *mut *mut _ as *mut *mut _
             );
         }
 
+        // If it's null, we have an error.
+        // So we act like the adapter is done.
+
         if inner.is_null() {
             unsafe {
-                adapter.Release();
+                (*output).Release();
+                (*self.adapter).Release();
                 self.adapter = ptr::null_mut();
             }
             return None;
         }
-        
-        unsafe {
-            adapter.AddRef();
-        }
 
-        Some(Some(Display { inner, adapter, desc }))
+        Some(Some(Display { inner, adapter: self.adapter, desc }))
     }
 }
 
@@ -294,7 +408,6 @@ impl Drop for Display {
 
 fn wrap_hresult(x: HRESULT) -> io::Result<()> {
     use std::io::ErrorKind::*;
-
     Err((match x {
         S_OK => return Ok(()),
         DXGI_ERROR_ACCESS_LOST => ConnectionReset,

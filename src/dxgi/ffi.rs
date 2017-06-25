@@ -12,6 +12,8 @@ use winapi::{
     ID3D11DeviceContext
 };
 
+pub const DXGI_MAP_READ: UINT = 1;
+
 pub const IID_IDXGIFACTORY1: GUID = GUID {
     Data1: 0x770aae78,
     Data2: 0xf26f,
@@ -24,6 +26,20 @@ pub const IID_IDXGIOUTPUT1: GUID = GUID {
     Data2: 0x939b,
     Data3: 0x4b83,
     Data4: [0xa3, 0x40, 0xa6, 0x85, 0x22, 0x66, 0x66, 0xcc]
+};
+
+pub const IID_IDXGISURFACE: GUID = GUID {
+    Data1: 3405559148,
+    Data2: 27331,
+    Data3: 18569,
+    Data4: [191, 71, 158, 35, 187, 210, 96, 236]
+};
+
+pub const IID_ID3D11TEXTURE2D: GUID = GUID {
+    Data1: 1863690994,
+    Data2: 53768,
+    Data3: 20105,
+    Data4: [154, 180, 72, 149, 53, 211, 79, 156]
 };
 
 #[link(name="dxgi")]

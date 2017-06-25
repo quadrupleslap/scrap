@@ -8,6 +8,8 @@ fn main() {
     use std::thread;
     use std::time::Duration;
 
+    let one_frame = Duration::new(1, 0) / 60;
+
     let d = Display::primary().unwrap();
     let (w, h) = (d.width(), d.height());
 
@@ -42,6 +44,6 @@ fn main() {
             }
         }
 
-        thread::sleep(Duration::from_millis(1000 / 60));
+        thread::sleep(one_frame);
     }
 }
