@@ -40,6 +40,14 @@ impl Display {
 }
 ```
 
+## System Requirements
+
+OS      | Minimum Requirements
+--------|---------------------
+macOS   | macOS 10.8
+Linux   | XCB + SHM
+Windows | DirectX 11.1
+
 ## Contributing
 
 Please contribute! See the [issue tracker](https://github.com/quadrupleslap/scrap/issues) for stuff that needs doing.
