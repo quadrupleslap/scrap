@@ -6,16 +6,6 @@ use std::mem;
 pub struct Display(u32);
 
 impl Display {
-    #[deprecated(note="renamed to `Display::primary`")]
-    pub fn main() -> Display {
-        Display::primary()
-    }
-
-    #[deprecated(note="renamed to `Display::is_primary`")]
-    pub fn is_main(self) -> bool {
-        self.is_primary()
-    }
-
     pub fn primary() -> Display {
         Display(unsafe { CGMainDisplayID() })
     }
