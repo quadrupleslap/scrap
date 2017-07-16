@@ -21,4 +21,4 @@ cfg_block!(cfg(dxgi) {
 });
 
 mod common;
-pub use common::{Capturer, Display};
+pub use common::*;
