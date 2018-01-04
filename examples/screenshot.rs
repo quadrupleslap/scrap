@@ -1,7 +1,7 @@
 extern crate image;
 extern crate scrap;
 
-use image::{ImageBuffer, Rgba};
+use image::{ImageBuffer, Rgb};
 use scrap::{Capturer, Display};
 use std::io::ErrorKind::WouldBlock;
 use std::path::Path;
@@ -35,18 +35,27 @@ fn main() {
                 }
             }
         };
-        
+
         println!("Captured! Saving...");
 
         // PistonDevelopers/image doesn't support ARGB images yet.
         // But they will soon!
-        let mut bitflipped = Vec::with_capacity(w * h * 4);
-        for pixel in buffer.chunks(4) {
-            let (b, g, r, a) = (pixel[0], pixel[1], pixel[2], pixel[3]);
-            bitflipped.extend_from_slice(&[r, g, b, a]);
+
+        let mut bitflipped = Vec::with_capacity(w * h * 3);
+        let stride = buffer.len() / h;
+
+        for y in 0..h {
+            for x in 0..w {
+                let i = stride * y + 4 * x;
+                bitflipped.extend_from_slice(&[
+                    buffer[i + 2],
+                    buffer[i + 1],
+                    buffer[i],
+                ]);
+            }
         }
 
-        let image: ImageBuffer<Rgba<u8>, _> =
+        let image: ImageBuffer<Rgb<u8>, _> =
             ImageBuffer::from_raw(
                 w as u32,
                 h as u32,

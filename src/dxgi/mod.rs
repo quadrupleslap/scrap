@@ -132,7 +132,7 @@ impl Capturer {
         } else {
             self.surface = ptr::null_mut();
             self.surface = self.ohgodwhat(frame)?;
-            
+
             let mut rect = mem::uninitialized();
             wrap_hresult((*self.surface).Map(
                 &mut rect,
@@ -195,7 +195,7 @@ impl Capturer {
             Ok(surface)
         }
     }
-    
+
     pub fn frame<'a>(&'a mut self, timeout: UINT) -> io::Result<&'a [u8]> {
         unsafe {
             // Release last frame.
@@ -211,7 +211,7 @@ impl Capturer {
                     self.surface = ptr::null_mut();
                 }
             }
-            
+
             (*self.duplication).ReleaseFrame();
 
             // Get next frame.

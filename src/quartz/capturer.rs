@@ -46,7 +46,7 @@ impl Capturer {
                 display.id(),
                 width,
                 height,
-                format, 
+                format,
                 config,
                 queue,
                 &*handler as *const Block<_, _> as *const c_void
@@ -62,7 +62,7 @@ impl Capturer {
             x => Err(x)
         }
     }
-    
+
     pub fn width(&self) -> usize { self.width }
     pub fn height(&self) -> usize { self.height }
     pub fn format(&self) -> PixelFormat { self.format }

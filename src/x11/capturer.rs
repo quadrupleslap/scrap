@@ -41,7 +41,7 @@ impl Capturer {
         }
 
         // Attach the segment to a readable address.
-        
+
         let buffer = unsafe {
             libc::shmat(
                 shmid,
@@ -96,7 +96,7 @@ impl Capturer {
 
     pub fn frame<'b>(&'b mut self) -> &'b [u8] {
         // Get the return value.
-        
+
         let result = unsafe {
             let off = self.loading & self.size;
             slice::from_raw_parts(
@@ -106,11 +106,11 @@ impl Capturer {
         };
 
         // Block for response.
-        
+
         unsafe {
             self.handle_response();
         }
-    
+
         // Start next request.
 
         self.loading ^= !0;
@@ -148,7 +148,7 @@ impl Drop for Capturer {
     fn drop(&mut self) {
         unsafe {
             // Process pending request.
-            self.handle_response(); 
+            self.handle_response();
             // Detach segment from XCB.
             xcb_shm_detach(self.display.server().raw(), self.xcbid);
             // Detach segment from our space.
