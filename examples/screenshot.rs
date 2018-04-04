@@ -17,12 +17,9 @@ fn main() {
     let mut capturer = Capturer::new(display).expect("Couldn't begin capture.");
     let (w, h) = (capturer.width(), capturer.height());
 
-    for i in 0..3 {
-        println!("{}...", 3 - i);
-        thread::sleep(one_second);
-    }
-
     loop {
+        // Wait until there's a frame.
+
         let buffer = match capturer.frame() {
             Ok(buffer) => buffer,
             Err(error) => {
@@ -31,15 +28,14 @@ fn main() {
                     thread::sleep(one_frame);
                     continue;
                 } else {
-                    panic!("Capture error: {}", error);
+                    panic!("Error: {}", error);
                 }
             }
         };
 
         println!("Captured! Saving...");
 
-        // PistonDevelopers/image doesn't support ARGB images yet.
-        // But they will soon!
+        // Flip the ARGB image into a BGRA image.
 
         let mut bitflipped = Vec::with_capacity(w * h * 3);
         let stride = buffer.len() / h;
@@ -55,6 +51,8 @@ fn main() {
             }
         }
 
+        // Save the image.
+
         let image: ImageBuffer<Rgb<u8>, _> =
             ImageBuffer::from_raw(
                 w as u32,
@@ -62,7 +60,7 @@ fn main() {
                 bitflipped
             ).expect("Couldn't convert frame into image buffer.");
 
-        image.save(&path).expect("Couldn't save image to `screenshot.png`.");
+        image.save(&path).expect("Couldn't save image.");
         println!("Image saved to `screenshot.png`.");
         break;
     }
