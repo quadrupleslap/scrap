@@ -35,7 +35,7 @@ fn main() {
 
         // Flip the ARGB image into a BGRA image.
 
-        let mut bitflipped = Vec::with_capacity(w * h * 3);
+        let mut bitflipped = Vec::with_capacity(w * h * 4);
         let stride = buffer.len() / h;
 
         for y in 0..h {
@@ -45,6 +45,7 @@ fn main() {
                     buffer[i + 2],
                     buffer[i + 1],
                     buffer[i],
+                    255,
                 ]);
             }
         }
