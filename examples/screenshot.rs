@@ -1,17 +1,15 @@
-extern crate image;
+extern crate repng;
 extern crate scrap;
 
-use image::{ImageBuffer, Rgb};
 use scrap::{Capturer, Display};
 use std::io::ErrorKind::WouldBlock;
-use std::path::Path;
+use std::fs::File;
 use std::thread;
 use std::time::Duration;
 
 fn main() {
     let one_second = Duration::new(1, 0);
     let one_frame = one_second / 60;
-    let path = Path::new("screenshot.png");
 
     let display = Display::primary().expect("Couldn't find primary display.");
     let mut capturer = Capturer::new(display).expect("Couldn't begin capture.");
@@ -53,14 +51,13 @@ fn main() {
 
         // Save the image.
 
-        let image: ImageBuffer<Rgb<u8>, _> =
-            ImageBuffer::from_raw(
-                w as u32,
-                h as u32,
-                bitflipped
-            ).expect("Couldn't convert frame into image buffer.");
+        repng::encode(
+            File::create("screenshot.png").unwrap(),
+            w as u32,
+            h as u32,
+            &bitflipped,
+        ).unwrap();
 
-        image.save(&path).expect("Couldn't save image.");
         println!("Image saved to `screenshot.png`.");
         break;
     }
