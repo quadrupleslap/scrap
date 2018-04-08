@@ -56,5 +56,5 @@ impl<'a> ops::Deref for Frame<'a> {
 OS      | Minimum Requirements
 --------|---------------------
 macOS   | macOS 10.8
-Linux   | XCB + SHM
+Linux   | XCB + SHM + RandR
 Windows | DirectX 11.1
