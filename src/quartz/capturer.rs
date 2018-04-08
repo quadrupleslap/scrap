@@ -72,7 +72,7 @@ impl Capturer {
 impl Drop for Capturer {
     fn drop(&mut self) {
         unsafe {
-            //TODO: Possibly incorrect behavior - may have to wait until `Stopped` before releasing.
+            //TODO: Maybe it should wait until `Stopped` before releasing?
             let _ = CGDisplayStreamStop(self.stream);
             CFRelease(self.stream);
             dispatch_release(self.queue);

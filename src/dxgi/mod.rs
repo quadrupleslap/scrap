@@ -281,7 +281,7 @@ impl Displays {
         };
 
         // If the current adapter is done, we free it.
-        // We then return None to signal the caller to get the next adapter and try again.
+        // We return None so the caller gets the next adapter and tries again.
 
         if output.is_null() {
             unsafe {

@@ -21,9 +21,8 @@ impl Capturer {
         // Calculate dimensions.
 
         let pixel_width = 4;
-        let width = display.width();
-        let height = display.height();
-        let size = (width as usize) * (height as usize) * pixel_width;
+        let rect = display.rect();
+        let size = (rect.w as usize) * (rect.h as usize) * pixel_width;
 
         // Create a shared memory segment.
 
@@ -73,8 +72,8 @@ impl Capturer {
             xcb_shm_get_image_unchecked(
                 server,
                 display.root(),
-                0, 0, // X-offset and Y-offset.
-                width, height,
+                rect.x, rect.y,
+                rect.w, rect.h,
                 !0, // Plane mask.
                 XCB_IMAGE_FORMAT_Z_PIXMAP,
                 xcbid,
@@ -113,14 +112,15 @@ impl Capturer {
 
         // Start next request.
 
+        let rect = self.display.rect();
+
         self.loading ^= !0;
         self.request = unsafe {
             xcb_shm_get_image_unchecked(
                 self.display.server().raw(),
                 self.display.root(),
-                0, 0,
-                self.display.width(),
-                self.display.height(),
+                rect.x, rect.y,
+                rect.w, rect.h,
                 !0,
                 XCB_IMAGE_FORMAT_Z_PIXMAP,
                 self.xcbid,

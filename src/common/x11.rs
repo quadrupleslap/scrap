@@ -10,11 +10,11 @@ impl Capturer {
     }
 
     pub fn width(&self) -> usize {
-        self.0.display().width() as usize
+        self.0.display().rect().w as usize
     }
 
     pub fn height(&self) -> usize {
-        self.0.display().height() as usize
+        self.0.display().rect().h as usize
     }
 
     pub fn frame<'a>(&'a mut self) -> io::Result<Frame<'a>> {
@@ -62,10 +62,10 @@ impl Display {
     }
 
     pub fn width(&self) -> usize {
-        self.0.width() as usize
+        self.0.rect().w as usize
     }
 
     pub fn height(&self) -> usize {
-        self.0.height() as usize
+        self.0.rect().h as usize
     }
 }

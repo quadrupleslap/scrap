@@ -6,25 +6,30 @@ use super::ffi::*;
 pub struct Display {
     server: Rc<Server>,
     default: bool,
-    width: u16,
-    height: u16,
-    root: xcb_window_t
+    rect: Rect,
+    root: xcb_window_t,
+}
+
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
+pub struct Rect {
+    pub x: i16,
+    pub y: i16,
+    pub w: u16,
+    pub h: u16,
 }
 
 impl Display {
     pub unsafe fn new(
         server: Rc<Server>,
         default: bool,
-        width: u16,
-        height: u16,
+        rect: Rect,
         root: xcb_window_t
     ) -> Display {
-        Display { server, default, width, height, root }
+        Display { server, default, rect, root }
     }
 
     pub fn server(&self) -> &Rc<Server> { &self.server }
     pub fn is_default(&self) -> bool { self.default }
-    pub fn width(&self) -> u16 { self.width }
-    pub fn height(&self) -> u16 { self.height }
+    pub fn rect(&self) -> Rect { self.rect }
     pub fn root(&self) -> xcb_window_t { self.root }
 }

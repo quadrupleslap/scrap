@@ -4,7 +4,7 @@ mod ffi;
 mod iter;
 mod server;
 
-pub use self::capturer::Capturer;
-pub use self::display::Display;
-pub use self::iter::DisplayIter;
-pub use self::server::Server;
+pub use self::capturer::*;
+pub use self::display::*;
+pub use self::iter::*;
+pub use self::server::*;

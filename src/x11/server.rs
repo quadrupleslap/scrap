@@ -13,11 +13,7 @@ pub struct Server {
 impl Server {
     pub fn displays(slf: Rc<Server>) -> DisplayIter {
         unsafe {
-            DisplayIter::new(
-                xcb_setup_roots_iterator(slf.setup),
-                slf.screenp,
-                slf
-            )
+            DisplayIter::new(slf)
         }
     }
 
@@ -41,9 +37,9 @@ impl Server {
         }
     }
 
-    pub fn raw(&self) -> *mut xcb_connection_t {
-        self.raw
-    }
+    pub fn raw(&self) -> *mut xcb_connection_t { self.raw }
+    pub fn screenp(&self) -> i32 { self.screenp }
+    pub fn setup(&self) -> *const xcb_setup_t { self.setup }
 }
 
 impl Drop for Server {
