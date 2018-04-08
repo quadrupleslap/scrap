@@ -6,7 +6,7 @@ Scrap records your screen! At least it does if you're on Windows, macOS, or Linu
 
 ```toml
 [dependencies]
-scrap = "0.4"
+scrap = "0.5"
 ```
 
 Its API is as simple as it gets!
