@@ -9,7 +9,7 @@ pub struct Capturer {
 }
 
 impl Capturer {
-    pub fn new(display: Display) -> io::Result<Capturer> {
+    pub fn new(display: &Display) -> io::Result<Capturer> {
         let frame = Arc::new(Mutex::new(None));
 
         let f = frame.clone();
