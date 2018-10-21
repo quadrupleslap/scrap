@@ -35,8 +35,8 @@ macro_rules! pixel_format {
     }
 }
 
-pub const SURFACE_LOCK_READ_ONLY: u32 = 0x00000001;
-pub const SURFACE_LOCK_AVOID_SYNC: u32 = 0x00000002;
+pub const SURFACE_LOCK_READ_ONLY: u32  = 0x0000_0001;
+pub const SURFACE_LOCK_AVOID_SYNC: u32 = 0x0000_0002;
 
 pub fn cfbool(x: bool) -> CFBooleanRef {
     unsafe {
