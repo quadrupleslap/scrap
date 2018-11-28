@@ -93,13 +93,13 @@ impl Capturer {
         &self.display
     }
 
-    pub fn frame<'b>(&'b mut self) -> &'b [u8] {
+    pub fn frame(&mut self) -> &[u8] {
         // Get the return value.
 
         let result = unsafe {
             let off = self.loading & self.size;
             slice::from_raw_parts(
-                self.buffer.offset(off as isize),
+                self.buffer.add(off),
                 self.size
             )
         };
