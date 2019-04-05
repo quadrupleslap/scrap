@@ -68,4 +68,20 @@ impl Display {
     pub fn height(&self) -> usize {
         self.0.rect().h as usize
     }
+
+    pub fn top(&self) -> i32 {
+        self.0.rect().y as i32
+    }
+
+    pub fn bottom(&self) -> i32 {
+        (self.0.rect().y + self.0.rect().h as i16) as i32
+    }
+
+    pub fn left(&self) -> i32 {
+        self.0.rect().x as i32
+    }
+
+    pub fn right(&self) -> i32 {
+        (self.0.rect().x + self.0.rect().w as i16) as i32
+    }
 }
