@@ -18,7 +18,7 @@ fn main() {
     loop {
         // Wait until there's a frame.
 
-        let buffer = match capturer.frame() {
+        let mut buffer = match capturer.frame() {
             Ok(buffer) => buffer,
             Err(error) => {
                 if error.kind() == WouldBlock {
@@ -33,8 +33,7 @@ fn main() {
 
         println!("Captured! Saving...");
 
-        // Flip the ARGB image into a BGRA image.
-
+        // Flip the BGRA image into a RGBA image.
         let mut bitflipped = Vec::with_capacity(w * h * 4);
         let stride = buffer.len() / h;
 
@@ -49,6 +48,17 @@ fn main() {
                 ]);
             }
         }
+
+        // Example doing it in-place with a mutable buffer
+        assert!(buffer.len() % 4 == 0);
+        unsafe {
+            for pixel in buffer.chunks_exact_mut(4) {
+                pixel.get_unchecked_mut(0..3).reverse();
+                *pixel.get_unchecked_mut(3) = 255;
+            }
+        }
+        // they're the same
+        assert_eq!(buffer.to_vec(), bitflipped);
 
         // Save the image.
 
