@@ -225,6 +225,10 @@ impl Capturer {
 impl Drop for Capturer {
     fn drop(&mut self) {
         unsafe {
+            if !self.surface.is_null() {
+                (*self.surface).Unmap();
+                (*self.surface).Release();
+            }
             (*self.duplication).Release();
             (*self.device).Release();
             (*self.context).Release();
