@@ -22,12 +22,18 @@ impl Capturer {
     }
 }
 
-pub struct Frame<'a>(&'a [u8]);
+pub struct Frame<'a>(&'a mut [u8]);
 
 impl<'a> ops::Deref for Frame<'a> {
     type Target = [u8];
-    fn deref(&self) -> &[u8] {
+    fn deref(&self) -> &Self::Target {
         self.0
+    }
+}
+
+impl<'a> ops::DerefMut for Frame<'a> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
