@@ -395,6 +395,22 @@ impl Display {
         self.desc.DesktopCoordinates.top
     }
 
+    pub fn top(&self) -> LONG {
+        self.desc.DesktopCoordinates.top
+    }
+
+    pub fn bottom(&self) -> LONG {
+        self.desc.DesktopCoordinates.bottom
+    }
+
+    pub fn left(&self) -> LONG {
+        self.desc.DesktopCoordinates.left
+    }
+
+    pub fn right(&self) -> LONG {
+        self.desc.DesktopCoordinates.right
+    }
+
     pub fn rotation(&self) -> DXGI_MODE_ROTATION {
         self.desc.Rotation
     }

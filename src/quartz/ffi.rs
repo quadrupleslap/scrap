@@ -126,6 +126,32 @@ pub type FrameAvailableHandler = RcBlock<(
     CGDisplayStreamUpdateRef // updateRef
 ), ()>;
 
+#[cfg(target_pointer_width = "64")]
+pub type CGFloat = libc::c_double;
+#[cfg(not(target_pointer_width = "64"))]
+pub type CGFloat = libc::c_float;
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default)]
+pub struct CGPoint {
+    pub x: CGFloat,
+    pub y: CGFloat,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default)]
+pub struct CGSize {
+    pub width: CGFloat,
+    pub height: CGFloat,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default)]
+pub struct CGRect {
+    pub origin: CGPoint,
+    pub size: CGSize,
+}
+
 #[link(name="System", kind="dylib")]
 #[link(name="CoreGraphics", kind="framework")]
 #[link(name="CoreFoundation", kind="framework")]
@@ -159,6 +185,7 @@ extern {
     pub fn CGMainDisplayID() -> u32;
     pub fn CGDisplayPixelsWide(display: u32) -> usize;
     pub fn CGDisplayPixelsHigh(display: u32) -> usize;
+    pub fn CGDisplayBounds(display: u32) -> CGRect;
 
     pub fn CGGetOnlineDisplayList(
         max_displays: u32,

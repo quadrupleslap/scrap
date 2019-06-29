@@ -97,4 +97,20 @@ impl Display {
     pub fn height(&self) -> usize {
         self.0.height()
     }
+
+    pub fn top(&self) -> i32 {
+        self.0.top() as i32
+    }
+
+    pub fn bottom(&self) -> i32 {
+        (self.0.top() as i32) + (self.0.height() as i32)
+    }
+
+    pub fn left(&self) -> i32 {
+        self.0.left() as i32
+    }
+
+    pub fn right(&self) -> i32 {
+        (self.0.left() as i32) + (self.0.width() as i32)
+    }
 }

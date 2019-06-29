@@ -40,6 +40,14 @@ impl Display {
         unsafe { CGDisplayPixelsHigh(self.0) }
     }
 
+    pub fn top(self) -> f64 {
+        unsafe { CGDisplayBounds(self.0).origin.y }
+    }
+
+    pub fn left(self) -> f64 {
+        unsafe { CGDisplayBounds(self.0).origin.x }
+    }
+
     pub fn is_builtin(self) -> bool {
         unsafe { CGDisplayIsBuiltin(self.0) != 0 }
     }
