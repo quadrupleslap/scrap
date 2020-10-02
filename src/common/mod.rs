@@ -1,4 +1,4 @@
-cfg_if! {
+cfg_if::cfg_if! {
     if #[cfg(quartz)] {
         mod quartz;
         pub use self::quartz::*;

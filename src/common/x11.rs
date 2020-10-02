@@ -1,6 +1,7 @@
-use x11;
-use std::{io, ops};
+use crate::x11;
+
 use std::rc::Rc;
+use std::{io, ops};
 
 pub struct Capturer(x11::Capturer);
 
@@ -37,7 +38,7 @@ impl Display {
     pub fn primary() -> io::Result<Display> {
         let server = Rc::new(match x11::Server::default() {
             Ok(server) => server,
-            Err(_) => return Err(io::ErrorKind::ConnectionRefused.into())
+            Err(_) => return Err(io::ErrorKind::ConnectionRefused.into()),
         });
 
         let mut displays = x11::Server::displays(server);
@@ -48,14 +49,14 @@ impl Display {
 
         match best {
             Some(best) => Ok(Display(best)),
-            None => Err(io::ErrorKind::NotFound.into())
+            None => Err(io::ErrorKind::NotFound.into()),
         }
     }
 
     pub fn all() -> io::Result<Vec<Display>> {
         let server = Rc::new(match x11::Server::default() {
             Ok(server) => server,
-            Err(_) => return Err(io::ErrorKind::ConnectionRefused.into())
+            Err(_) => return Err(io::ErrorKind::ConnectionRefused.into()),
         });
 
         Ok(x11::Server::displays(server).map(Display).collect())

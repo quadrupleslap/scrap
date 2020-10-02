@@ -1,7 +1,7 @@
-use libc;
-use std::{io, ptr, slice};
-use super::Display;
 use super::ffi::*;
+use super::Display;
+
+use std::{io, ptr, slice};
 
 pub struct Capturer {
     display: Display,
@@ -11,13 +11,11 @@ pub struct Capturer {
 
     request: xcb_shm_get_image_cookie_t,
     loading: usize,
-    size: usize
+    size: usize,
 }
 
 impl Capturer {
-    pub fn new(
-        display: Display
-    ) -> io::Result<Capturer> {
+    pub fn new(display: Display) -> io::Result<Capturer> {
         // Calculate dimensions.
 
         let pixel_width = 4;
@@ -31,7 +29,7 @@ impl Capturer {
                 libc::IPC_PRIVATE,
                 size * 2,
                 // Everyone can do anything.
-                libc::IPC_CREAT | 0o777
+                libc::IPC_CREAT | 0o777,
             )
         };
 
@@ -41,13 +39,7 @@ impl Capturer {
 
         // Attach the segment to a readable address.
 
-        let buffer = unsafe {
-            libc::shmat(
-                shmid,
-                ptr::null(),
-                libc::SHM_RDONLY
-            )
-        } as *mut u8;
+        let buffer = unsafe { libc::shmat(shmid, ptr::null(), libc::SHM_RDONLY) } as *mut u8;
 
         if buffer as isize == -1 {
             return Err(io::Error::last_os_error());
@@ -62,7 +54,7 @@ impl Capturer {
                 server,
                 xcbid,
                 shmid as u32,
-                0 // False, i.e. not read-only.
+                0, // False, i.e. not read-only.
             );
         }
 
@@ -72,20 +64,27 @@ impl Capturer {
             xcb_shm_get_image_unchecked(
                 server,
                 display.root(),
-                rect.x, rect.y,
-                rect.w, rect.h,
+                rect.x,
+                rect.y,
+                rect.w,
+                rect.h,
                 !0, // Plane mask.
                 XCB_IMAGE_FORMAT_Z_PIXMAP,
                 xcbid,
-                0 // Byte offset.
+                0, // Byte offset.
             )
         };
 
         // Return!
 
         Ok(Capturer {
-            display, shmid, xcbid, buffer,
-            request, loading: 0, size
+            display,
+            shmid,
+            xcbid,
+            buffer,
+            request,
+            loading: 0,
+            size,
         })
     }
 
@@ -93,15 +92,11 @@ impl Capturer {
         &self.display
     }
 
-    pub fn frame<'b>(&'b mut self) -> &'b [u8] {
+    pub fn frame(&mut self) -> &[u8] {
         // Get the return value.
-
         let result = unsafe {
             let off = self.loading & self.size;
-            slice::from_raw_parts(
-                self.buffer.offset(off as isize),
-                self.size
-            )
+            slice::from_raw_parts(self.buffer.add(off), self.size)
         };
 
         // Block for response.
@@ -119,12 +114,14 @@ impl Capturer {
             xcb_shm_get_image_unchecked(
                 self.display.server().raw(),
                 self.display.root(),
-                rect.x, rect.y,
-                rect.w, rect.h,
+                rect.x,
+                rect.y,
+                rect.w,
+                rect.h,
                 !0,
                 XCB_IMAGE_FORMAT_Z_PIXMAP,
                 self.xcbid,
-                (self.loading & self.size) as u32
+                (self.loading & self.size) as u32,
             )
         };
 
@@ -134,11 +131,8 @@ impl Capturer {
     }
 
     unsafe fn handle_response(&self) {
-        let response = xcb_shm_get_image_reply(
-            self.display.server().raw(),
-            self.request,
-            ptr::null_mut()
-        );
+        let response =
+            xcb_shm_get_image_reply(self.display.server().raw(), self.request, ptr::null_mut());
 
         libc::free(response as *mut _);
     }

@@ -1,6 +1,7 @@
-use std::rc::Rc;
-use super::Server;
 use super::ffi::*;
+use super::Server;
+
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct Display {
@@ -19,17 +20,32 @@ pub struct Rect {
 }
 
 impl Display {
+    ///
+    /// # Safety
     pub unsafe fn new(
         server: Rc<Server>,
         default: bool,
         rect: Rect,
-        root: xcb_window_t
+        root: xcb_window_t,
     ) -> Display {
-        Display { server, default, rect, root }
+        Display {
+            server,
+            default,
+            rect,
+            root,
+        }
     }
 
-    pub fn server(&self) -> &Rc<Server> { &self.server }
-    pub fn is_default(&self) -> bool { self.default }
-    pub fn rect(&self) -> Rect { self.rect }
-    pub fn root(&self) -> xcb_window_t { self.root }
+    pub fn server(&self) -> &Rc<Server> {
+        &self.server
+    }
+    pub fn is_default(&self) -> bool {
+        self.default
+    }
+    pub fn rect(&self) -> Rect {
+        self.rect
+    }
+    pub fn root(&self) -> xcb_window_t {
+        self.root
+    }
 }
