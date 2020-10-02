@@ -1,9 +1,11 @@
-use block::{Block, ConcreteBlock};
-use libc::c_void;
-use super::ffi::*;
 use super::config::Config;
 use super::display::Display;
+use super::ffi::*;
 use super::frame::Frame;
+
+use block::{Block, ConcreteBlock};
+use libc::c_void;
+
 use std::ptr;
 
 pub struct Capturer {
@@ -13,7 +15,7 @@ pub struct Capturer {
     width: usize,
     height: usize,
     format: PixelFormat,
-    display: Display
+    display: Display,
 }
 
 impl Capturer {
@@ -23,20 +25,20 @@ impl Capturer {
         height: usize,
         format: PixelFormat,
         config: Config,
-        handler: F
+        handler: F,
     ) -> Result<Capturer, CGError> {
-        let handler: FrameAvailableHandler =
-            ConcreteBlock::new(move |status, _, surface, _| {
-                use self::CGDisplayStreamFrameStatus::*;
-                if status == FrameComplete {
-                    handler(unsafe { Frame::new(surface) });
-                }
-            }).copy();
+        let handler: FrameAvailableHandler = ConcreteBlock::new(move |status, _, surface, _| {
+            use self::CGDisplayStreamFrameStatus::*;
+            if status == FrameComplete {
+                handler(unsafe { Frame::new(surface) });
+            }
+        })
+        .copy();
 
         let queue = unsafe {
             dispatch_queue_create(
                 b"quadrupleslap.scrap\0".as_ptr() as *const i8,
-                ptr::null_mut()
+                ptr::null_mut(),
             )
         };
 
@@ -49,7 +51,7 @@ impl Capturer {
                 format,
                 config,
                 queue,
-                &*handler as *const Block<_, _> as *const c_void
+                &*handler as *const Block<_, _> as *const c_void,
             );
             CFRelease(config);
             stream
@@ -57,16 +59,29 @@ impl Capturer {
 
         match unsafe { CGDisplayStreamStart(stream) } {
             CGError::Success => Ok(Capturer {
-                stream, queue, width, height, format, display
+                stream,
+                queue,
+                width,
+                height,
+                format,
+                display,
             }),
-            x => Err(x)
+            x => Err(x),
         }
     }
 
-    pub fn width(&self) -> usize { self.width }
-    pub fn height(&self) -> usize { self.height }
-    pub fn format(&self) -> PixelFormat { self.format }
-    pub fn display(&self) -> Display { self.display }
+    pub fn width(&self) -> usize {
+        self.width
+    }
+    pub fn height(&self) -> usize {
+        self.height
+    }
+    pub fn format(&self) -> PixelFormat {
+        self.format
+    }
+    pub fn display(&self) -> Display {
+        self.display
+    }
 }
 
 impl Drop for Capturer {

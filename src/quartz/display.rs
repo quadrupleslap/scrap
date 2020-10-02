@@ -1,4 +1,5 @@
 use super::ffi::*;
+
 use std::mem;
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
@@ -17,7 +18,7 @@ impl Display {
 
             match CGGetOnlineDisplayList(16, arr.as_mut_ptr(), &mut len) {
                 CGError::Success => (),
-                x => return Err(x)
+                x => return Err(x),
             }
 
             let mut res = Vec::with_capacity(16);

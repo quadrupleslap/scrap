@@ -1,8 +1,8 @@
-use libc;
+use super::ffi::*;
+use super::{Display, Rect, Server};
+
 use std::ptr;
 use std::rc::Rc;
-use super::{Display, Rect, Server};
-use super::ffi::*;
 
 //TODO: Do I have to free the displays?
 
@@ -13,15 +13,21 @@ pub struct DisplayIter {
 }
 
 impl DisplayIter {
+    ///
+    /// # Safety
     pub unsafe fn new(server: Rc<Server>) -> DisplayIter {
         let mut outer = xcb_setup_roots_iterator(server.setup());
         let inner = Self::next_screen(&mut outer, &server);
-        DisplayIter { outer, inner, server }
+        DisplayIter {
+            outer,
+            inner,
+            server,
+        }
     }
 
     fn next_screen(
         outer: &mut xcb_screen_iterator_t,
-        server: &Server
+        server: &Server,
     ) -> Option<(xcb_randr_monitor_info_iterator_t, xcb_window_t)> {
         if outer.rem == 0 {
             return None;
@@ -36,11 +42,7 @@ impl DisplayIter {
                 1, //TODO: I don't know if this should be true or false.
             );
 
-            let response = xcb_randr_get_monitors_reply(
-                server.raw(),
-                cookie,
-                ptr::null_mut(),
-            );
+            let response = xcb_randr_get_monitors_reply(server.raw(), cookie, ptr::null_mut());
 
             let inner = xcb_randr_get_monitors_monitors_iterator(response);
 
@@ -59,24 +61,26 @@ impl Iterator for DisplayIter {
         loop {
             if let Some((ref mut inner, root)) = self.inner {
                 // If there is something in the current screen, return that.
-                if inner.rem != 0 {unsafe {
-                    let data = &*inner.data;
+                if inner.rem != 0 {
+                    unsafe {
+                        let data = &*inner.data;
 
-                    let display = Display::new(
-                        self.server.clone(),
-                        data.primary != 0,
-                        Rect {
-                            x: data.x,
-                            y: data.y,
-                            w: data.width,
-                            h: data.height,
-                        },
-                        root
-                    );
+                        let display = Display::new(
+                            self.server.clone(),
+                            data.primary != 0,
+                            Rect {
+                                x: data.x,
+                                y: data.y,
+                                w: data.width,
+                                h: data.height,
+                            },
+                            root,
+                        );
 
-                    xcb_randr_monitor_info_next(inner);
-                    return Some(display);
-                }}
+                        xcb_randr_monitor_info_next(inner);
+                        return Some(display);
+                    }
+                }
             } else {
                 // If there is no current screen, the screen iterator is empty.
                 return None;

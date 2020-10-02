@@ -7,6 +7,7 @@ documentation = "https://docs.rs/scrap"
 keywords = ["screen", "capture", "record"]
 license = "MIT"
 authors = ["Ram <quadrupleslap@gmail.com>"]
+edition = "2018"
 
 [dependencies]
 block = "0.1"

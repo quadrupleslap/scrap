@@ -1,36 +1,15 @@
 use self::ffi::*;
-use std::{io, mem, ptr, slice};
+
 use winapi::{
-    HRESULT,
-    IDXGIAdapter1,
-    IDXGIFactory1,
-    IDXGIOutput1,
-    S_OK,
-    UINT,
-    DXGI_OUTPUT_DESC,
-    LONG,
-    DXGI_MODE_ROTATION,
-    ID3D11Device,
-    ID3D11DeviceContext,
-    IDXGIOutputDuplication,
-    D3D11_SDK_VERSION,
-    D3D_DRIVER_TYPE_UNKNOWN,
-    D3D_FEATURE_LEVEL_9_1,
-    DXGI_ERROR_ACCESS_LOST,
-    DXGI_ERROR_WAIT_TIMEOUT,
-    DXGI_ERROR_INVALID_CALL,
-    E_ACCESSDENIED,
-    DXGI_ERROR_UNSUPPORTED,
-    ID3D11Texture2D,
-    DXGI_ERROR_NOT_CURRENTLY_AVAILABLE,
-    DXGI_ERROR_SESSION_DISCONNECTED,
-    TRUE,
-    IDXGISurface,
-    IDXGIResource,
-    DXGI_RESOURCE_PRIORITY_MAXIMUM,
-    D3D11_CPU_ACCESS_READ,
-    D3D11_USAGE_STAGING
+    ID3D11Device, ID3D11DeviceContext, ID3D11Texture2D, IDXGIAdapter1, IDXGIFactory1, IDXGIOutput1,
+    IDXGIOutputDuplication, IDXGIResource, IDXGISurface, D3D11_CPU_ACCESS_READ, D3D11_SDK_VERSION,
+    D3D11_USAGE_STAGING, D3D_DRIVER_TYPE_UNKNOWN, D3D_FEATURE_LEVEL_9_1, DXGI_ERROR_ACCESS_LOST,
+    DXGI_ERROR_INVALID_CALL, DXGI_ERROR_NOT_CURRENTLY_AVAILABLE, DXGI_ERROR_SESSION_DISCONNECTED,
+    DXGI_ERROR_UNSUPPORTED, DXGI_ERROR_WAIT_TIMEOUT, DXGI_MODE_ROTATION, DXGI_OUTPUT_DESC,
+    DXGI_RESOURCE_PRIORITY_MAXIMUM, E_ACCESSDENIED, HRESULT, LONG, S_OK, TRUE, UINT,
 };
+
+use std::{io, mem, ptr, slice};
 
 mod ffi;
 
@@ -40,8 +19,10 @@ pub struct Capturer {
     device: *mut ID3D11Device,
     context: *mut ID3D11DeviceContext,
     duplication: *mut IDXGIOutputDuplication,
-    fastlane: bool, surface: *mut IDXGISurface,
-    data: *mut u8, len: usize,
+    fastlane: bool,
+    surface: *mut IDXGISurface,
+    data: *mut u8,
+    len: usize,
     height: usize,
 }
 
@@ -57,24 +38,22 @@ impl Capturer {
                 &mut **display.adapter,
                 D3D_DRIVER_TYPE_UNKNOWN,
                 ptr::null_mut(), // No software rasterizer.
-                0, // No device flags.
+                0,               // No device flags.
                 ptr::null_mut(), // Feature levels.
-                0, // Feature levels' length.
+                0,               // Feature levels' length.
                 D3D11_SDK_VERSION,
                 &mut device,
                 &mut D3D_FEATURE_LEVEL_9_1,
-                &mut context
+                &mut context,
             )
-        } != S_OK {
+        } != S_OK
+        {
             // Unknown error.
             return Err(io::ErrorKind::Other.into());
         }
 
         let res = wrap_hresult(unsafe {
-            (*display.inner).DuplicateOutput(
-                &mut **device,
-                &mut duplication
-            )
+            (*display.inner).DuplicateOutput(&mut **device, &mut duplication)
         });
 
         if let Err(err) = res {
@@ -91,12 +70,14 @@ impl Capturer {
 
         Ok(unsafe {
             let mut capturer = Capturer {
-                device, context, duplication,
+                device,
+                context,
+                duplication,
                 fastlane: desc.DesktopImageInSystemMemory == TRUE,
                 surface: ptr::null_mut(),
                 height: display.height() as usize,
                 data: ptr::null_mut(),
-                len: 0
+                len: 0,
             };
             let _ = capturer.load_frame(0);
             capturer
@@ -108,17 +89,11 @@ impl Capturer {
         let mut info = mem::uninitialized();
         self.data = ptr::null_mut();
 
-        wrap_hresult((*self.duplication).AcquireNextFrame(
-            timeout,
-            &mut info,
-            &mut frame
-        ))?;
+        wrap_hresult((*self.duplication).AcquireNextFrame(timeout, &mut info, &mut frame))?;
 
         if self.fastlane {
             let mut rect = mem::uninitialized();
-            let res = wrap_hresult(
-                (*self.duplication).MapDesktopSurface(&mut rect)
-            );
+            let res = wrap_hresult((*self.duplication).MapDesktopSurface(&mut rect));
 
             (*frame).Release();
 
@@ -134,10 +109,7 @@ impl Capturer {
             self.surface = self.ohgodwhat(frame)?;
 
             let mut rect = mem::uninitialized();
-            wrap_hresult((*self.surface).Map(
-                &mut rect,
-                DXGI_MAP_READ
-            ))?;
+            wrap_hresult((*self.surface).Map(&mut rect, DXGI_MAP_READ))?;
 
             self.data = rect.pBits;
             self.len = self.height * rect.Pitch as usize;
@@ -145,14 +117,11 @@ impl Capturer {
         }
     }
 
-    unsafe fn ohgodwhat(
-        &mut self,
-        frame: *mut IDXGIResource
-    ) -> io::Result<*mut IDXGISurface> {
+    unsafe fn ohgodwhat(&mut self, frame: *mut IDXGIResource) -> io::Result<*mut IDXGISurface> {
         let mut texture: *mut ID3D11Texture2D = ptr::null_mut();
         (*frame).QueryInterface(
             &IID_ID3D11TEXTURE2D,
-            &mut texture as *mut *mut _ as *mut *mut _
+            &mut texture as *mut *mut _ as *mut *mut _,
         );
 
         let mut texture_desc = mem::uninitialized();
@@ -167,7 +136,7 @@ impl Capturer {
         let res = wrap_hresult((*self.device).CreateTexture2D(
             &mut texture_desc,
             ptr::null(),
-            &mut readable
+            &mut readable,
         ));
 
         if let Err(err) = res {
@@ -181,13 +150,10 @@ impl Capturer {
             let mut surface = ptr::null_mut();
             (*readable).QueryInterface(
                 &IID_IDXGISURFACE,
-                &mut surface as *mut *mut _ as *mut *mut _
+                &mut surface as *mut *mut _ as *mut *mut _,
             );
 
-            (*self.context).CopyResource(
-                &mut **readable,
-                &mut **texture
-            );
+            (*self.context).CopyResource(&mut **readable, &mut **texture);
 
             (*frame).Release();
             (*texture).Release();
@@ -242,15 +208,13 @@ pub struct Displays {
     /// Index of the CURRENT adapter.
     nadapter: UINT,
     /// Index of the NEXT display to fetch.
-    ndisplay: UINT
+    ndisplay: UINT,
 }
 
 impl Displays {
     pub fn new() -> io::Result<Displays> {
         let mut factory = ptr::null_mut();
-        wrap_hresult(unsafe {
-            CreateDXGIFactory1(&IID_IDXGIFACTORY1, &mut factory)
-        })?;
+        wrap_hresult(unsafe { CreateDXGIFactory1(&IID_IDXGIFACTORY1, &mut factory) })?;
 
         let mut adapter = ptr::null_mut();
         unsafe {
@@ -262,7 +226,7 @@ impl Displays {
             factory,
             adapter,
             nadapter: 0,
-            ndisplay: 0
+            ndisplay: 0,
         })
     }
 
@@ -311,10 +275,7 @@ impl Displays {
 
         let mut inner = ptr::null_mut();
         unsafe {
-            (*output).QueryInterface(
-                &IID_IDXGIOUTPUT1,
-                &mut inner as *mut *mut _ as *mut *mut _
-            );
+            (*output).QueryInterface(&IID_IDXGIOUTPUT1, &mut inner as *mut *mut _ as *mut *mut _);
             (*output).Release();
         }
 
@@ -333,7 +294,11 @@ impl Displays {
             (*self.adapter).AddRef();
         }
 
-        Some(Some(Display { inner, adapter: self.adapter, desc }))
+        Some(Some(Display {
+            inner,
+            adapter: self.adapter,
+            desc,
+        }))
     }
 }
 
@@ -350,10 +315,7 @@ impl Iterator for Displays {
 
             self.adapter = unsafe {
                 let mut adapter = ptr::null_mut();
-                (*self.factory).EnumAdapters1(
-                    self.nadapter,
-                    &mut adapter
-                );
+                (*self.factory).EnumAdapters1(self.nadapter, &mut adapter);
                 adapter
             };
 
@@ -381,18 +343,16 @@ impl Drop for Displays {
 pub struct Display {
     inner: *mut IDXGIOutput1,
     adapter: *mut IDXGIAdapter1,
-    desc: DXGI_OUTPUT_DESC
+    desc: DXGI_OUTPUT_DESC,
 }
 
 impl Display {
     pub fn width(&self) -> LONG {
-        self.desc.DesktopCoordinates.right -
-        self.desc.DesktopCoordinates.left
+        self.desc.DesktopCoordinates.right - self.desc.DesktopCoordinates.left
     }
 
     pub fn height(&self) -> LONG {
-        self.desc.DesktopCoordinates.bottom -
-        self.desc.DesktopCoordinates.top
+        self.desc.DesktopCoordinates.bottom - self.desc.DesktopCoordinates.top
     }
 
     pub fn rotation(&self) -> DXGI_MODE_ROTATION {
@@ -401,9 +361,7 @@ impl Display {
 
     pub fn name(&self) -> &[u16] {
         let s = &self.desc.DeviceName;
-        let i = s.iter()
-            .position(|&x| x == 0)
-            .unwrap_or(s.len());
+        let i = s.iter().position(|&x| x == 0).unwrap_or(s.len());
         &s[..i]
     }
 }
@@ -428,6 +386,7 @@ fn wrap_hresult(x: HRESULT) -> io::Result<()> {
         DXGI_ERROR_UNSUPPORTED => ConnectionRefused,
         DXGI_ERROR_NOT_CURRENTLY_AVAILABLE => Interrupted,
         DXGI_ERROR_SESSION_DISCONNECTED => ConnectionAborted,
-        _ => Other
-    }).into())
+        _ => Other,
+    })
+    .into())
 }
