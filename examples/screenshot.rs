@@ -33,7 +33,7 @@ fn main() {
 
         println!("Captured! Saving...");
 
-        // Flip the ARGB image into a BGRA image.
+        // Flip the BGRA image into a RGBA image.
 
         let mut bitflipped = Vec::with_capacity(w * h * 4);
         let stride = buffer.len() / h;
